@@ -1,0 +1,33 @@
+@font-face {
+  font-family: "Bungee-Regular";
+  src: url(fonts/Bungee-Regular.ttf) format(truetype);
+}
+@font-face {
+  font-family: "NewAmsterdam-Regular";
+  src: url(fonts/NewAmsterdam-Regular.ttf) format(truetype);
+}
+#main {
+  height: 100vh;
+  padding: 10vh 0vw;
+  background-image: url(resources/5532919.jpg);
+  background-size: cover;
+}
+
+.bungee {
+  font-family: "Bungee-Regular";
+}
+
+.newamsterdam {
+  font-family: "NewAmsterdam-Regular";
+}
+
+.orangeButton {
+  box-shadow: inset -5px -5px 13px 6px #ec4a00;
+  background-color: #ff9a00;
+  color: #b92d6c;
+}
+.orangeButton:hover {
+  box-shadow: inset -5px -5px 10px 0px #ec4a00;
+}
+
+/*# sourceMappingURL=styles.css.map */

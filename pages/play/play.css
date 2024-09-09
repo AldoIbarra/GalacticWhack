@@ -1,0 +1,73 @@
+#main {
+  display: flex;
+}
+#main #pause-button-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  width: 10vw;
+}
+#main #pause-button-container button {
+  background-color: #df9903;
+  border: none;
+  border-radius: 100%;
+  padding: 20px 23px;
+  box-shadow: inset 5px 2px 3px 3px rgba(255, 255, 255, 0.5), inset -3px -2px 3px 3px rgba(0, 0, 0, 0.5);
+}
+#main #pause-button-container button i {
+  font-size: 4vw;
+  color: #ff6490;
+}
+#main .game {
+  height: 85vh;
+  border: 20px solid #00ccff;
+  margin-left: -2px;
+  border-radius: 20px;
+  background-color: #2f2f2f;
+}
+#main .pause-container .pause-body {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  height: 80vh;
+}
+#main .pause-container .pause-body #title {
+  background-color: #02c7f3;
+  padding: 3px 50px;
+  z-index: 1;
+  border-radius: 20px;
+  box-shadow: inset 20px 20px 15px 0px rgba(255, 255, 255, 0.2), inset -20px -20px 15px 0px rgba(0, 0, 0, 0.2);
+}
+#main .pause-container .pause-body #title h1 {
+  font-size: 7vw;
+  color: #ffcd0b;
+}
+#main .pause-container .pause-body #options {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: center;
+  background-color: #d5005c;
+  width: 45vw;
+  padding-top: 90px;
+  padding-bottom: 25px;
+  margin-top: -35px;
+  border-radius: 40px;
+  box-shadow: inset 20px 20px 15px 0px rgba(255, 255, 255, 0.2), inset -20px -20px 15px 0px rgba(0, 0, 0, 0.2);
+}
+#main .pause-container .pause-body #options .orangeButton {
+  text-decoration: none;
+  font-size: 2.5vw;
+  width: 50%;
+  margin-bottom: 5vh;
+  border: none;
+  padding: 5px 15px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+/*# sourceMappingURL=play.css.map */

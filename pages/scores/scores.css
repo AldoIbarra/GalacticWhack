@@ -1,0 +1,58 @@
+#main .scores-container {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+#main .scores-container .title {
+  color: #e76400;
+  text-align: center;
+}
+#main .scores-container .title h1 {
+  font-size: 6vw;
+}
+#main .scores-container .scores-body {
+  width: 70%;
+  height: 55vh;
+  background: #3400a4;
+  background: linear-gradient(150deg, rgba(52, 0, 164, 0.599877451) 10%, rgba(0, 122, 168, 0.6026785714) 50%, #3400a4 90%);
+  padding: 8vh 2vw;
+  border-radius: 25px;
+  color: white;
+  box-shadow: inset 20px 20px 15px 0px rgba(255, 255, 255, 0.2), inset -20px -20px 15px 0px rgba(0, 0, 0, 0.2);
+}
+#main .scores-container .scores-body #headers {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+#main .scores-container .scores-body #headers h3 {
+  font-size: 2.5vw;
+  color: #c547ae;
+}
+#main .scores-container .scores-body #scores-content {
+  margin-top: 10px;
+  padding: 0px 5vw;
+  height: 85%;
+  overflow-y: scroll;
+}
+#main .scores-container .scores-body #scores-content table {
+  scrollbar-color: red;
+  width: 100%;
+  font-size: 2vw;
+}
+#main .scores-container .back {
+  padding: 5vh 0px;
+  text-align: center;
+}
+#main .scores-container .back a {
+  text-decoration: none;
+  font-size: 2.5vw;
+  width: 50%;
+  margin-bottom: 5vh;
+  border: none;
+  padding: 10px 6vw;
+  border-radius: 20px;
+}
+
+/*# sourceMappingURL=scores.css.map */

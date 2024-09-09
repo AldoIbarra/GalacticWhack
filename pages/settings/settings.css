@@ -1,0 +1,87 @@
+#main .settings-container {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+#main .settings-container .title {
+  color: #00ce0e;
+  text-align: center;
+}
+#main .settings-container .title h1 {
+  font-size: 6vw;
+}
+#main .settings-container .settings-body {
+  width: 60%;
+  height: 55vh;
+  background: #3400a4;
+  background: linear-gradient(150deg, rgba(52, 0, 164, 0.599877451) 10%, rgba(0, 122, 168, 0.6026785714) 50%, #3400a4 90%);
+  padding: 8vh 2vw;
+  border-radius: 25px;
+  color: white;
+  box-shadow: inset 20px 20px 15px 0px rgba(255, 255, 255, 0.2), inset -20px -20px 15px 0px rgba(0, 0, 0, 0.2);
+}
+#main .settings-container .settings-body #musicRange {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
+  align-items: center;
+  font-size: 2.5vw;
+}
+#main .settings-container .settings-body #musicRange #slider {
+  -webkit-appearance: none;
+  width: 30%;
+  height: 15px;
+  background: #390067;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: 0.2s;
+  transition: opacity 0.2s;
+  border-radius: 20px;
+  box-shadow: inset 3px 3px 0px 0px rgba(0, 0, 0, 0.5), inset -3px -3px 0px 0px rgba(255, 255, 255, 0.5);
+}
+#main .settings-container .settings-body #musicRange #slider:hover {
+  opacity: 1;
+}
+#main .settings-container .settings-body #musicRange #slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 30px;
+  background: #feed7f;
+  cursor: pointer;
+  border-radius: 5px;
+}
+#main .settings-container .settings-body #musicRange #slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: green;
+  cursor: pointer;
+}
+#main .settings-container .settings-body #otherOptions {
+  text-align: center;
+  padding: 7vh 12vw;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+#main .settings-container .settings-body #otherOptions h3 {
+  font-size: 2.5vw;
+}
+#main .settings-container .back {
+  padding: 5vh 0px;
+  text-align: center;
+}
+#main .settings-container .back a {
+  text-decoration: none;
+  font-size: 2.5vw;
+  width: 50%;
+  margin-bottom: 5vh;
+  border: none;
+  padding: 10px 6vw;
+  border-radius: 20px;
+}
+
+/*# sourceMappingURL=settings.css.map */
