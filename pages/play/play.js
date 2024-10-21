@@ -8,36 +8,35 @@ $(document).ready(function() {
     /*---Ocultar menu al inicio---*/
     $('.pause-container').hide();
 
-    /*---Deteccion de botones---*/
-    $(document).keypress(function(e){
-        var tecla = String.fromCharCode(e.which);
-        if((tecla=='a' || tecla=='A')){
-            console.log('A');
-        }
-        if((tecla=='D' || tecla=='d')){
-            console.log('D');
-        }
-        if((tecla=='w' || tecla=='W')){
-            console.log('W');
-        }
-        if((tecla=='s' || tecla=='S')){
-            console.log('S');
-        }
-        if(tecla=='2'){
-            console.log('2');
-        }
-        if(tecla=='8'){
-            console.log('8');
-        }
-        if(tecla=='6'){
-            console.log('6');
-        }
-        if(tecla=='4'){
-            console.log('4');
-        }
-    })
+ //Validacion de teclas
+$(document).keypress(function(e) {
+    const tecla = String.fromCharCode(e.which).toLowerCase(); 
+
+    const specificTopo = MoleModel.find(topo => topo.userData.key === tecla);
+
+    if (specificTopo) {
+        console.log(`¡Topo golpeado con la tecla ${tecla.toUpperCase()}!`);
+        hitTopo(specificTopo); 
+    }
+})
 });
 
+//Golpe al topo
+function hitTopo(specificTopo) {
+    if (specificTopo && specificTopo.position.y > 0) {
+        console.log('¡Topo golpeado, bajando!');
+        specificTopo.userData.moving = false; 
+        specificTopo.position.y = -1;
+
+       
+        setTimeout(() => {
+            specificTopo.position.y = -2; 
+            specificTopo.userData.offset = Math.random() * Math.PI * 2; 
+            specificTopo.userData.moving = true; 
+            console.log('¡Topo restaurado desde debajo del suelo!');
+        }, 500);
+    }
+}
 /*---Menu de pausa---*/
 $("#pause").click(function(){
     pause();
@@ -77,22 +76,35 @@ manager.onError = function ( url ){
     console.log(' There was an error loading ' + url );
 }
 
-function Load3DModel(path){
+function Load3DModel(path) {
     const loaderModel = new OBJLoader(manager);
-    var mtlModel = new MTLLoader(manager);
+    const mtlModel = new MTLLoader(manager);
 
-    mtlModel.load(path+'.mtl', function(materials){
-        materials.preload();
-        loaderModel.setMaterials(materials);
-        loaderModel.load(path+'.obj',
-            function( object ){
-                object.name="Test";
-                object.scale.copy( new THREE.Vector3( 0.7, 0.7, 0.7));
-                scene.add(object);
-            }
-        );
+    return new Promise((resolve, reject) => {
+        mtlModel.load(path + '.mtl', function (materials) {
+            materials.preload();
+            loaderModel.setMaterials(materials);
+            loaderModel.load(path + '.obj', function (object) {
+                object.name = "Test";
+                object.scale.copy(new THREE.Vector3(0.3, 0.3, 0.3))
+                object.userData.moving = true;  
+                resolve(object);
+            }, undefined, reject);
+        }, undefined, reject);
     });
 }
+
+const topPositionsAndKeys = [
+    { position: { x: -3, y: -5, z: -3 }, key: 'w' }, // W
+    { position: { x: -4.7, y: -1, z: -1 }, key: 'a' }, // A
+    { position: { x: -1, y: -1, z: -1 }, key: 'd' }, // D
+    { position: { x: -3, y: -1, z: 1 }, key: 's' }, // S
+    { position: { x: 3, y: -1, z: -3 }, key: '6' }, // 6
+    { position: { x: 4.7, y: -1, z: -1 }, key: '2' }, // 2
+    { position: { x: 1, y: -1, z: -1 }, key: '8' }, // 8
+    { position: { x: 3, y: -1, z: 1 }, key: '4' }    // 4
+];
+
 /*---Configuración de escena---*/
 const display = document.getElementById( 'game-display' );
 const displayWidth = display.clientWidth*1.459;
@@ -115,7 +127,24 @@ const box = new THREE.Mesh(boxGeometry, boxMaterial);
 scene.add(box);
 
 /*---Carga de modelo---*/
-Load3DModel("../resources/Models/Mole");
+let MoleModel = [];
+const numMole = 8;
+
+topPositionsAndKeys.forEach(({ position, key }) =>{
+    Load3DModel('../resources/Models/Mole').then((object) => {
+       
+        object.position.set(position.x, -2, position.z); 
+        object.userData.speed = Math.random() * 2 + 0.5;
+        object.userData.offset = Math.random() * Math.PI * 2; 
+        object.userData.originalPosition = { ...position };
+        object.userData.key = key;
+        MoleModel.push(object);  
+        scene.add(object);  
+    }).catch((error) => {
+        console.error('Error loading model:', error);
+    });
+});
+
 
 /*---Carga de Plano con Textura y rotación---*/
 const texture = new THREE.TextureLoader().load("../resources/TexturaPlaneta.png");
@@ -168,5 +197,14 @@ function animate(){
     box.position.set(positions.x, positions.y, positions.z);
 
     requestAnimationFrame(animate);
+
+    const time = Date.now() * 0.001;
+
+    MoleModel.forEach((topo) => {
+        if (topo && topo.userData.moving) {
+            topo.position.y = Math.sin(time * topo.userData.speed + topo.userData.offset) * 0.5; 
+        }
+    });
+
     renderer.render( scene, camera );
 }
