@@ -9,9 +9,9 @@
 
 <section id="main">
     <div id="pause-button-container">
-        <button onclick="pause()"><i class="fa fa-pause"></i></button>
+        <button id="pause"><i class="fa fa-pause"></i></button>
     </div>
-    <div class="container game">
+    <div class="container game" id="game-display">
         <div class="row">
             <div class="col-12">
             </div>
@@ -24,7 +24,7 @@
                     <h1 class="bungee">PAUSA</h1>
                 </div>
                 <div id="options">
-                    <button class="newamsterdam orangeButton" onclick="backToGame()">VOLVER</button>
+                    <button class="newamsterdam orangeButton" id="backToGame">VOLVER</button>
                     <a href="../settings/settings.php" class="newamsterdam orangeButton">AJUSTES</a>
                     <a href="../mainMenu/mainMenu.php" class="newamsterdam orangeButton">MENU PRINCIPAL</a>
                 </div>
