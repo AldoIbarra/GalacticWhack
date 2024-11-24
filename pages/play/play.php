@@ -32,5 +32,8 @@
         </div>
     </div>
 </section>
+<script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+<script src="play.js"></script>
+
 
 <?php include("../footer.php"); ?>

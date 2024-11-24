@@ -36,6 +36,20 @@ $(document).ready(function() {
     });
 });
 
+
+const socket = io('http://localhost:3000'); // URL del servidor Node.js
+
+// Escuchar la conexión
+socket.on('connect', () => {
+    console.log('Conectado al servidor con ID:', socket.id);
+});
+
+// Ejemplo: escuchar actualizaciones de puntos
+socket.on('updatePoints', (players) => {
+    console.log('Puntos actualizados:', players);
+});
+
+
 //Golpe al topo
 function hitTopo(specificTopo) {
     if (specificTopo && specificTopo.position.y > 0) {
