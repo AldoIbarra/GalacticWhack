@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href= <?= $stylename ?> >
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <Script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></Script>
     <script type="importmap">{
         "imports": {

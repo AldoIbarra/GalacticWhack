@@ -1,3 +1,6 @@
+#main {
+  max-height: 100vh;
+}
 #main .title {
   text-align: center;
   display: flex;
@@ -14,14 +17,14 @@
   color: #00ccff;
 }
 #main .options {
-  padding: 15vh 0vw;
+  padding-top: 15vh;
   text-align: center;
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
   align-items: center;
 }
-#main .options a {
+#main .options a, #main .options button, #main .options input {
   text-decoration: none;
   font-size: 2.5vw;
   width: 50%;
@@ -29,6 +32,7 @@
   border: none;
   padding: 5px 15px;
   border-radius: 20px;
+  outline: none;
 }
 
 /*# sourceMappingURL=mainmenu.css.map */
