@@ -6,7 +6,7 @@
             
             if (!isset(self::$instance) ){
                 $opciones[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
-                self::$instance = new PDO('mysql:host=localhost;dbname=GalacticWhack','root', '0109115M', $opciones );
+                self::$instance = new PDO('mysql:host=localhost;dbname=GalacticWhack','root', 'root', $opciones );
             }
             return self::$instance;
 
