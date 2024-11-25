@@ -23,6 +23,23 @@ try {
                     echo json_encode(["status" => "error", "message" => $response[1]]);
                 }
             }
+            if ($_POST['option'] == 'setScore') {
+                $username = $_POST['userName'];
+                $points = $_POST['points'];
+
+                if (empty($username) || empty($points)) {
+                    http_response_code(400);
+                    echo json_encode(["status" => "error", "message" => "Algún dato vacío"]);
+                    break;
+                }
+
+                $response = UserClass::getUserScore($username, (int)$points);
+                if ($response[0]) {
+                    echo json_encode(["status" => "success", "data" => $response[1]]);
+                } else {
+                    echo json_encode(["status" => "error", "message" => $response[1]]);
+                }
+            }
             break;
 
         case 'GET':

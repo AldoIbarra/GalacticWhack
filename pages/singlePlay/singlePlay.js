@@ -5,8 +5,22 @@ import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
+var points = 0;
+let instructionsTime = 10;
+let gameTime = 60;
+var animating = true;
+var session;
+var mazoMoving = false;
 //Solo estilos de página
 $(document).ready(function() {
+    /* Info de sesión */
+    $.ajaxSetup({cache: false})
+    $.get('../../api/getsession.php', function (data) {
+        session = JSON.parse(data);
+        console.log(session);
+        console.log(session.UserName);
+    });
+
     /*---Ocultar menu al inicio---*/
     $('.pause-container').hide();
 
@@ -16,38 +30,24 @@ $(document).ready(function() {
 
         const specificTopo = MoleModel.find(topo => topo.userData.key === tecla);
 
+        console.log(specificTopo);
+
+        if(!mazoMoving){
+            mazo1.position.set(specificTopo.position.x, 3, specificTopo.position.z+2);
+            mazoMoving = true;
+        }
+
         if (specificTopo) {
             console.log(`¡Topo golpeado con la tecla ${tecla.toUpperCase()}!`);
             hitTopo(specificTopo); 
         }
     })
-
-    let isKeyPressed = false;
-    $(document).keydown(function(event){
-        if(!isKeyPressed){
-            pressDown(event.key);
-            isKeyPressed = true;
-        }
-        console.log(event.key);
-    });
-    $(document).keyup(function(event) {
-        isKeyPressed = false;
-        pressUp(event.key);
-    });
 });
 
-
-const socket = io('http://localhost:3000'); // URL del servidor Node.js
-
-// Escuchar la conexión
-socket.on('connect', () => {
-    console.log('Conectado al servidor con ID:', socket.id);
-});
-
-// Ejemplo: escuchar actualizaciones de puntos
-socket.on('updatePoints', (players) => {
-    console.log('Puntos actualizados:', players);
-});
+function updateScore(){
+    points++;
+    $('#playerScore').text(`Puntuación: ${points}`);
+}
 
 
 //Golpe al topo
@@ -56,7 +56,7 @@ function hitTopo(specificTopo) {
         console.log('¡Topo golpeado, bajando!');
         specificTopo.userData.moving = false; 
         specificTopo.position.y = -1;
-
+        updateScore();
        
         setTimeout(() => {
             specificTopo.position.y = -2; 
@@ -125,11 +125,7 @@ const topPositionsAndKeys = [
     { position: { x: 0, y: -1, z: 1 }, key: 'w', player: 1  }, // W
     { position: { x: -2, y: -1, z: 2.5 }, key: 'a', player: 1  }, // A
     { position: { x: 2, y: -1, z: 2.5 }, key: 'd', player: 1  }, // D
-    { position: { x: 0, y: -1, z: 4 }, key: 's', player: 1  }, // S
-    { position: { x: 0, y: -1, z: -1 }, key: '8', player: 2 }, // 8
-    { position: { x: 2, y: -1, z: -2.5 }, key: '6', player: 2 }, // 6
-    { position: { x: -2, y: -1, z: -2.5 }, key: '4', player: 2 }, // 4
-    { position: { x: 0, y: -1, z: -4 }, key: '2', player: 2 }    // 2
+    { position: { x: 0, y: -1, z: 4 }, key: 's', player: 1  } // S
 ];
 
 const decorationPositions = [
@@ -138,10 +134,6 @@ const decorationPositions = [
     { position: { x: -2, y: 0, z: 2.5 }, name: 'crater_1', player: 1 },
     { position: { x: 2, y: 0, z: 2.5 }, name: 'crater_1', player: 1 },
     { position: { x: 0, y: 0, z: 4 }, name: 'crater_1', player: 1 },
-    { position: { x: 0, y: 0, z: 1 }, name: 'crater_1', player: 2 },
-    { position: { x: -2, y: 0, z: 2.5 }, name: 'crater_1', player: 2 },
-    { position: { x: 2, y: 0, z: 2.5 }, name: 'crater_1', player: 2 },
-    { position: { x: 0, y: 0, z: 4 }, name: 'crater_1', player: 2 },
     /*Plants*/
     //player 1 decorations
     { position: { x: 3.9, y: 0, z: 1.4 }, name: 'cucullus_1', player: 1 },
@@ -172,7 +164,8 @@ const decorationPositions = [
     { position: { x: 6, y: 0, z: 3 }, name: 'roca', player: 2 },
     { position: { x: -6, y: 0, z: 3 }, name: 'roca', player: 2 },
     { position: { x: 7, y: 0, z: 0 }, name: 'root_2', player: 2 },
-    { position: { x: 10.5, y: 0, z: 4.5 }, name: 'root_2', player: 2 }
+    { position: { x: 10.5, y: 0, z: 4.5 }, name: 'root_2', player: 2 },
+    { position: { x: 0, y: 0, z: -2.5 }, name: 'roca', player: 1 }
 ];
 
 /*---Configuración de escena---*/
@@ -256,8 +249,8 @@ async function setModel({ position, name, player }) {
     }
 }
 
-const mazo1 = await setModel({ position: { x: 0, y: 3, z: 0 }, name: 'MAZO', player: 1 });
-const mazo2 = await setModel({ position: { x: 0, y: 3, z: 0 }, name: 'MAZO', player: 1 });
+const mazo1 = await setModel({ position: { x: 0, y: -8, z: 0 }, name: 'MAZO', player: 1 });
+mazo1.rotation.x = -0.5 * Math.PI;
 
 /*---Carga de Plano con Textura y rotación---*/
 const texture = new THREE.TextureLoader().load("../resources/texturaEscenario1.jpg");
@@ -274,15 +267,9 @@ scene.add(plane);
 plane.rotation.x = -0.5 * Math.PI;
 
 /*---Posicionamiento de camara---*/
-//Jugador 1
 camera.position.x = 0.02722054735455402;
 camera.position.y = 4.197563889034358;
 camera.position.z = 6.447094644527979;
-
-//Jugador 2
-// camera.position.x = 0.02722054735455402;
-// camera.position.y = 4.197563889034358;
-// camera.position.z = -6.447094644527979;
 
 /*---Funcionamiento de órbita (Si deseas usarlo, comenta la linea donde se deshabilita---*/
 orbit.update();
@@ -294,13 +281,7 @@ scene.add(al);
 //Player 1 pointing light
 const pl1 = new THREE.PointLight(0Xffffff, 30, 10, 2);
 pl1.position.set(0, 4, 2.5)
-const pl1Helper = new THREE.PointLightHelper(pl1);
-scene.add(pl1, pl1Helper);
-//Player 2 pointing light
-const pl2 = new THREE.PointLight(0Xffffff, 30, 10, 2);
-pl2.position.set(0, 4, -2.5)
-const pl2Helper = new THREE.PointLightHelper(pl2);
-scene.add(pl2, pl2Helper);
+scene.add(pl1);
 
 /*---Grid---*/
 const gridHelper = new THREE.GridHelper();
@@ -314,128 +295,60 @@ const loader = new THREE.TextureLoader();
 const textureBackground = loader.load('../resources/space3.png');
 scene.background = textureBackground;
 
-/* Fuente */
-const fontLoader = new FontLoader();
+/* Comienzo de timers */
 
-function generateText(text) {
-    return new Promise((resolve, reject) => {
-      fontLoader.load('../resources/gentilis_bold.typeface.json', function(font) {
-        const textGeometry = new TextGeometry(text, {
-          font: font,
-          size: 0.8,          // Tamaño del texto
-          height: 0.1,      // Profundidad del texto (grosor)
-          curveSegments: 12, // Segmentos de curva para suavidad
-          bevelEnabled: true,   // Habilitar bisel para efecto 3D
-          bevelThickness: 0.03, // Grosor del bisel
-          bevelSize: 0.02,      // Tamaño del bisel
-          bevelOffset: 0,       // Desplazamiento del bisel
-          bevelSegments: 5      // Segmentos del bisel
-        });
-        const textMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
-        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-        resolve(textMesh);
-      }, undefined, function(error) {
-        reject(error);
-      });
-    });
-  }
-var W = new THREE.Mesh();
-var A = new THREE.Mesh();
-var S = new THREE.Mesh();
-var D = new THREE.Mesh();
-var EIGHT = new THREE.Mesh();
-var TWO = new THREE.Mesh();
-var SIX = new THREE.Mesh();
-var FOUR = new THREE.Mesh();
-generateText('W').then(textMesh => {
-    textMesh.position.set(-3.3, 0, -1.5);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    W = textMesh;
-    //scene.add(W);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
+function startInstructionsTimer() {
+    const timerInterval = setInterval(() => {
+        if (instructionsTime > 0) {
+            instructionsTime--;
+            $('#timeInstructions').text(instructionsTime);
+        } else {
+            // Detiene el timer cuando llega a 0
+            $('#timeInstructions').css('display', 'none');
+            $('#time').css('display', 'block');
+            clearInterval(timerInterval); 
+            console.log('¡Tiempo terminado!');
+            animate();
+            startGameTimer();
+        }
+    }, 1000);
+}
 
-generateText('S').then(textMesh => {
-    textMesh.position.set(-3.3, 0, 0.5);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    S = textMesh;
-    //scene.add(S);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
+startInstructionsTimer();
 
-generateText('A').then(textMesh => {
-    textMesh.position.set(-4.1, 0, -0.6);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    A = textMesh;
-    //scene.add(A);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
-
-generateText('D').then(textMesh => {
-    textMesh.position.set(-2.2, 0, -0.6);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    D = textMesh;
-    //scene.add(D);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
-
-generateText('4').then(textMesh => {
-    textMesh.position.set(1.5, 0, -0.6);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    FOUR = textMesh;
-    //scene.add(FOUR);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
-
-generateText('6').then(textMesh => {
-    textMesh.position.set(3.6, 0, -0.6);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    SIX = textMesh;
-    //scene.add(SIX);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
-
-generateText('8').then(textMesh => {
-    textMesh.position.set(2.5, 0, -1.5);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    EIGHT = textMesh;
-    //scene.add(EIGHT);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
-
-generateText('2').then(textMesh => {
-    textMesh.position.set(2.7, 0, 0.6);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    TWO = textMesh;
-    //scene.add(TWO);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
-
-animate();
+function startGameTimer() {
+    const timerGameInterval = setInterval(() => {
+        if (gameTime > 0) {
+            gameTime--;
+            $('#time').text(gameTime);
+        } else {
+             // Detiene el timer cuando llega a 0
+            clearInterval(timerGameInterval);
+            console.log('¡Tiempo terminado!');
+            animating = false;
+            //setScores(points);
+        }
+    }, 1000);
+}
 
 function animate(){
 
-    console.log(camera.position);
+    //console.log(camera.position);
 
-    mazo1.position.set(0, -8, 0);
-    mazo2.position.set(0, -8, 0);
     
-    // pl.position.set(positions.x, positions.y + 3.8, positions.z);
 
-    requestAnimationFrame(animate);
+    if(animating)
+        requestAnimationFrame(animate);
 
     const time = Date.now() * 0.001;
-    // console.log('time: ' + time);
 
     MoleModel.forEach((topo) => {
+        if(mazoMoving){
+            mazo1.position.y -= 0.01;
+            if(mazo1.position.y <= 1.8){
+                mazoMoving = false;
+            }
+        }
         if (topo && topo.userData.moving) {
             // Si el topo está descansando, verifica si debe volver a moverse
             if (topo.userData.restingTime > 0) {
@@ -484,64 +397,22 @@ function animate(){
     renderer.render( scene, camera );
 }
 
-function pressDown(tecla){
-    switch (tecla) {
-        case 'w' || 'W':
-            W.position.set(-3.3, -0.1, -1.5);
-            break;
-        case 'a' || 'A':
-            A.position.set(-4.1, -0.1, -0.6);
-            break;
-        case 's'  || 'S':
-            S.position.set(-3.3, -0.1, 0.5);
-            break;
-        case 'd' || 'D':
-            D.position.set(-2.2, -0.1, -0.6);
-            break;
-        case '8':
-            EIGHT.position.set(2.5, -0.1, -1.5);
-            break;
-        case '4':
-            FOUR.position.set(1.5, -0.1, -0.6);
-            break;
-        case '6':
-            SIX.position.set(3.6, -0.1, -0.6);
-            break;
-        case '2':
-            TWO.position.set(2.7, -0.1, 0.6);
-            break;
-        default:
-          break;
-    }
-}
-
-function pressUp(tecla){
-    switch (tecla) {
-        case 'w' || 'W':
-            W.position.set(-3.3, 0, -1.5);
-            break;
-        case 'a' || 'A':
-            A.position.set(-4.1, 0, -0.6);
-            break;
-        case 's'  || 'S':
-            S.position.set(-3.3, 0, 0.5);
-            break;
-        case 'd' || 'D':
-            D.position.set(-2.2, 0, -0.6);
-            break;
-        case '8':
-            EIGHT.position.set(2.5, 0, -1.5);
-            break;
-        case '4':
-            FOUR.position.set(1.5, 0, -0.6);
-            break;
-        case '6':
-            SIX.position.set(3.6, 0, -0.6);
-            break;
-        case '2':
-            TWO.position.set(2.7, 0, 0.6);
-            break;
-        default:
-          break;
-    }
+function setScores(points) {
+    $.ajax({
+        type: "POST",
+        url: "../../api/usersController.php",
+        data: {
+            points: points,
+            userName: session.UserName,
+            option: 'setScore'
+        },
+        success: function(data) {
+          console.log(data);
+        },
+        error: function(xhr, status, error) {
+          console.log(error);
+            alert('Error.');
+            console.log('error');
+        },
+    });
 }

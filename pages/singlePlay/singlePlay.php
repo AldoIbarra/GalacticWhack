@@ -1,8 +1,8 @@
 <?php
     require("../../config/sessionVerif.php");
     $titlename = "Jugar";
-    $stylename = "play.css";
-    $javascript = "play.js";
+    $stylename = "singlePlay.css";
+    $javascript = "singlePlay.js";
    
     require_once("../header.php");
 
@@ -19,6 +19,14 @@
     <div class="container game" id="game-display">
         <div class="row">
             <div class="col-12">
+                <div id="score">
+                    <h1 class="bungee"><?= $_SESSION['UserName'];?></h1>
+                    <h4 id="playerScore">Puntuación: 0</h4>
+                </div>
+                <div id="timeContainer">
+                    <h1 id="timeInstructions" class="bungee">10</h1>
+                    <h1 id="time" class="bungee">10</h1>
+                </div>
             </div>
         </div>
     </div>
@@ -37,8 +45,7 @@
         </div>
     </div>
 </section>
-<script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
-<script src="play.js"></script>
+<script src="singlePlay.js"></script>
 
 
 <?php include("../footer.php"); ?>
