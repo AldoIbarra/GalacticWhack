@@ -44,28 +44,38 @@ $(document).ready(function() {
     })
 });
 
-function updateScore(){
-    points++;
-    $('#playerScore').text(`Puntuación: ${points}`);
+function updateScore(pointsToAdd) {
+    points += pointsToAdd; // Suma los puntos según el argumento
+    $('#playerScore').text(`Puntuación: ${points}`); // Actualiza el marcador
 }
 
 
 //Golpe al topo
 function hitTopo(specificTopo) {
     if (specificTopo && specificTopo.position.y > 0) {
-        console.log('¡Topo golpeado, bajando!');
+        console.log(`¡${specificTopo.name} golpeado, bajando!`);
         specificTopo.userData.moving = false; 
         specificTopo.position.y = -1;
-        updateScore();
-       
+
+        if (specificTopo.name === "Bellota Buena") {
+            updateScore(3); // 3 puntos para una bellota buena
+        } else if (specificTopo.name === "Bellota Mala") {
+            updateScore(-2); // Restar puntos para una bellota mala
+        } else if (specificTopo.name === "Topo") {
+            updateScore(1); // 1 punto para un topo
+        }
+
         setTimeout(() => {
             specificTopo.position.y = -2; 
             specificTopo.userData.offset = Math.random() * Math.PI * 2; 
             specificTopo.userData.moving = true; 
-            console.log('¡Topo restaurado desde debajo del suelo!');
+            console.log(`¡${specificTopo.name} restaurado desde debajo del suelo!`);
         }, 500);
     }
 }
+
+
+
 /*---Menu de pausa---*/
 $("#pause").click(function(){
     pause();
@@ -86,6 +96,8 @@ function backToGame(){
     $('#pause-button-container').show();
     $('.game').show();
 }
+
+
 
 /*---Funcionamiento de carga de modelos---*/
 const manager = new THREE.LoadingManager();
@@ -128,7 +140,7 @@ const topPositionsAndKeys = [
     { position: { x: 0, y: -1, z: 4 }, key: 's', player: 1  } // S
 ];
 
-const decorationPositions = [
+    const decorationPositions = [
     //Craters
     { position: { x: 0, y: 0, z: 1 }, name: 'crater_1', player: 1 },
     { position: { x: -2, y: 0, z: 2.5 }, name: 'crater_1', player: 1 },
@@ -144,7 +156,7 @@ const decorationPositions = [
     { position: { x: -3.3, y: 0, z: 4.5 }, name: 'cucullus_2', player: 1 },
     { position: { x: -2, y: 0, z: 3.5 }, name: 'cucullus_2', player: 1 },
     { position: { x: 2.5, y: 0, z: 4 }, name: 'cucullus_1', player: 1 },
-    { position: { x: 2.9, y: 0, z: 0 }, name: 'roca', player: 1 },
+    { position: { x: 2.9, y: 0, z: 0 }, name: 'roc  a', player: 1 },
     { position: { x: -11, y: 0, z: 4 }, name: 'roca', player: 1 },
     { position: { x: 6, y: 0, z: 3 }, name: 'roca', player: 1 },
     { position: { x: -6, y: 0, z: 3 }, name: 'roca', player: 1 },
@@ -190,12 +202,22 @@ const orbit = new OrbitControls(camera, renderer.domElement);
 let MoleModel = [];
 const numMole = 8;
 
-topPositionsAndKeys.forEach(({ position, key, player }) =>{
-    Load3DModel('../resources/Models/Mole1').then((object) => {
-        object.name = "Test";
+topPositionsAndKeys.forEach(({ position, key, player }) => {
+    const randomChoice = Math.random();
+    let modelPath = '../resources/Models/Mole1'; // Ruta del modelo por defecto (topo)
+    let objectType = 'Topo';
+    if (randomChoice < 0.2) {
+        modelPath = '../resources/Models/bellota_buena';
+        objectType = 'Bellota Buena';
+    } else if (randomChoice < 0.4) {
+        modelPath = '../resources/Models/bellota_mala';
+        objectType = 'Bellota Mala';
+    }
+    Load3DModel(modelPath).then((object) => {
+        object.name = objectType;
         object.position.set(position.x, -2, position.z);
         object.userData.speed = Math.random() * 2 + 0.5;
-        object.userData.offset = Math.random() * Math.PI * 2; 
+        object.userData.offset = Math.random() * Math.PI * 2;
         object.userData.originalPosition = { ...position };
         object.userData.key = key;
         object.userData.moving = true;
@@ -203,17 +225,25 @@ topPositionsAndKeys.forEach(({ position, key, player }) =>{
         object.userData.restingTime = 0;
         object.userData.lastTime = 0;
         object.userData.player = player;
-        if(player == 2){
-            object.rotation.y = 1 * Math.PI;
+        if (player == 2) {
+            object.rotation.y = Math.PI;
         }
         MoleModel.push(object);
         scene.add(object);
-        console.log('topo.speed: ' + object.userData.speed);
-        console.log('topo.offset: ' + object.userData.offset);
+        console.log(`${objectType} creado.`);
     }).catch((error) => {
-        console.error('Error loading model:', error);
+        console.error('Error al cargar el modelo:', error);
     });
 });
+const occupiedPositions = new Set();
+
+topPositionsAndKeys.forEach(({ position, key, player }) => {
+    if (!occupiedPositions.has(position)) {
+        occupiedPositions.add(position); // Marca la posición como ocupada
+        // Lógica para crear el objeto (como se mostró antes)
+    }
+});
+
 
 decorationPositions.forEach(({ position, name, player }) =>{
     Load3DModel('../resources/Models/' + name).then((object) => {
@@ -330,6 +360,7 @@ function startGameTimer() {
         }
     }, 1000);
 }
+
 
 function animate(){
 
