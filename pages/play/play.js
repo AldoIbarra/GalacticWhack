@@ -5,8 +5,18 @@ import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
+var session;
+
 //Solo estilos de página
 $(document).ready(function() {
+    /* Info de sesión */
+    $.ajaxSetup({cache: false})
+    $.get('../../api/getsession.php', function (data) {
+        session = JSON.parse(data);
+        console.log(session);
+        console.log(session.UserName);
+    });
+
     /*---Ocultar menu al inicio---*/
     $('.pause-container').hide();
 

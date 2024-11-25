@@ -273,7 +273,7 @@ camera.position.z = 6.447094644527979;
 
 /*---Funcionamiento de órbita (Si deseas usarlo, comenta la linea donde se deshabilita---*/
 orbit.update();
-orbit.enabled = true;
+orbit.enabled = false;
 
 /*---Luces---*/
 const al = new THREE.AmbientLight(0xffffff, 0.5);
