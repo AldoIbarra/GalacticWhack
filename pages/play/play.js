@@ -116,7 +116,10 @@ function Load3DModel(path) {
             loaderModel.load(path + '.obj', function (object) {
                 object.name = "Test";
                 object.scale.copy(new THREE.Vector3(0.3, 0.3, 0.3))
-                object.userData.moving = true;  
+                object.userData.moving = true;
+                object.userData.movementType = Math.floor(Math.random() * 3) + 1;
+                object.userData.restingTime = 0;
+                object.userData.lastTime = 0;
                 resolve(object);
             }, undefined, reject);
         }, undefined, reject);
@@ -124,14 +127,57 @@ function Load3DModel(path) {
 }
 
 const topPositionsAndKeys = [
-    { position: { x: -3, y: -5, z: -3 }, key: 'w' }, // W
-    { position: { x: -4.7, y: -1, z: -1 }, key: 'a' }, // A
-    { position: { x: -1, y: -1, z: -1 }, key: 'd' }, // D
-    { position: { x: -3, y: -1, z: 1 }, key: 's' }, // S
-    { position: { x: 3, y: -1, z: -3 }, key: '8' }, // 8
-    { position: { x: 4.7, y: -1, z: -1 }, key: '6' }, // 6
-    { position: { x: 1, y: -1, z: -1 }, key: '4' }, // 4
-    { position: { x: 3, y: -1, z: 1 }, key: '2' }    // 2
+    { position: { x: 0, y: -1, z: 1 }, key: 'w', player: 1  }, // W
+    { position: { x: -2, y: -1, z: 2.5 }, key: 'a', player: 1  }, // A
+    { position: { x: 2, y: -1, z: 2.5 }, key: 'd', player: 1  }, // D
+    { position: { x: 0, y: -1, z: 4 }, key: 's', player: 1  }, // S
+    { position: { x: 0, y: -1, z: -1 }, key: '8', player: 2 }, // 8
+    { position: { x: 2, y: -1, z: -2.5 }, key: '6', player: 2 }, // 6
+    { position: { x: -2, y: -1, z: -2.5 }, key: '4', player: 2 }, // 4
+    { position: { x: 0, y: -1, z: -4 }, key: '2', player: 2 }    // 2
+];
+
+const decorationPositions = [
+    //Craters
+    { position: { x: 0, y: 0, z: 1 }, name: 'crater_1', player: 1 },
+    { position: { x: -2, y: 0, z: 2.5 }, name: 'crater_1', player: 1 },
+    { position: { x: 2, y: 0, z: 2.5 }, name: 'crater_1', player: 1 },
+    { position: { x: 0, y: 0, z: 4 }, name: 'crater_1', player: 1 },
+    { position: { x: 0, y: 0, z: 1 }, name: 'crater_1', player: 2 },
+    { position: { x: -2, y: 0, z: 2.5 }, name: 'crater_1', player: 2 },
+    { position: { x: 2, y: 0, z: 2.5 }, name: 'crater_1', player: 2 },
+    { position: { x: 0, y: 0, z: 4 }, name: 'crater_1', player: 2 },
+    /*Plants*/
+    //player 1 decorations
+    { position: { x: 3.9, y: 0, z: 1.4 }, name: 'cucullus_1', player: 1 },
+    { position: { x: -2, y: 0, z: 1 }, name: 'cucullus_2', player: 1 },
+    { position: { x: -2.5, y: 0, z: 1.5 }, name: 'root_1', player: 1 },
+    { position: { x: 3.9, y: 0, z: 4 }, name: 'root_1', player: 1 },
+    { position: { x: -3, y: 0, z: 4 }, name: 'root_2', player: 1 },
+    { position: { x: -3.3, y: 0, z: 4.5 }, name: 'cucullus_2', player: 1 },
+    { position: { x: -2, y: 0, z: 3.5 }, name: 'cucullus_2', player: 1 },
+    { position: { x: 2.5, y: 0, z: 4 }, name: 'cucullus_1', player: 1 },
+    { position: { x: 2.9, y: 0, z: 0 }, name: 'roca', player: 1 },
+    { position: { x: -11, y: 0, z: 4 }, name: 'roca', player: 1 },
+    { position: { x: 6, y: 0, z: 3 }, name: 'roca', player: 1 },
+    { position: { x: -6, y: 0, z: 3 }, name: 'roca', player: 1 },
+    { position: { x: 7, y: 0, z: 0 }, name: 'root_2', player: 1 },
+    { position: { x: 10.5, y: 0, z: 4.5 }, name: 'root_2', player: 1 },
+    //player 2 decorations
+    { position: { x: 3.9, y: 0, z: 1.4 }, name: 'cucullus_1', player: 2 },
+    { position: { x: -2, y: 0, z: 1 }, name: 'cucullus_2', player: 2 },
+    { position: { x: -2.5, y: 0, z: 1.5 }, name: 'root_1', player: 2 },
+    { position: { x: 3.9, y: 0, z: 4 }, name: 'root_1', player: 2 },
+    { position: { x: -3, y: 0, z: 4 }, name: 'root_2', player: 2 },
+    { position: { x: -3.3, y: 0, z: 4.5 }, name: 'cucullus_2', player: 2 },
+    { position: { x: -2, y: 0, z: 3.5 }, name: 'cucullus_2', player: 2 },
+    { position: { x: 2.5, y: 0, z: 4 }, name: 'cucullus_1', player: 2 },
+    { position: { x: 2.9, y: 0, z: 0 }, name: 'roca', player: 2 },
+    { position: { x: -11, y: 0, z: 4 }, name: 'roca', player: 2 },
+    { position: { x: 6, y: 0, z: 3 }, name: 'roca', player: 2 },
+    { position: { x: -6, y: 0, z: 3 }, name: 'roca', player: 2 },
+    { position: { x: 7, y: 0, z: 0 }, name: 'root_2', player: 2 },
+    { position: { x: 10.5, y: 0, z: 4.5 }, name: 'root_2', player: 2 }
 ];
 
 /*---Configuración de escena---*/
@@ -150,25 +196,42 @@ display.appendChild( renderer.domElement );
 const orbit = new OrbitControls(camera, renderer.domElement);
 
 /*---Carga de caja---*/
-const boxGeometry = new THREE.BoxGeometry();
-const boxMaterial = new THREE.MeshBasicMaterial({color: 0x00FF00});
-const box = new THREE.Mesh(boxGeometry, boxMaterial);
-//scene.add(box);
+//Eliminado
 
 /*---Carga de modelo---*/
 let MoleModel = [];
 const numMole = 8;
 
-topPositionsAndKeys.forEach(({ position, key }) =>{
-    Load3DModel('../resources/Models/Mole').then((object) => {
+topPositionsAndKeys.forEach(({ position, key, player }) =>{
+    Load3DModel('../resources/Models/Mole1').then((object) => {
        
         object.position.set(position.x, -2, position.z); 
         object.userData.speed = Math.random() * 2 + 0.5;
         object.userData.offset = Math.random() * Math.PI * 2; 
         object.userData.originalPosition = { ...position };
         object.userData.key = key;
-        MoleModel.push(object);  
-        scene.add(object);  
+        object.userData.player = player;
+        if(player == 2){
+            object.rotation.y = 1 * Math.PI;
+        }
+        MoleModel.push(object);
+        scene.add(object);
+        console.log('topo.speed: ' + object.userData.speed);
+        console.log('topo.offset: ' + object.userData.offset);
+    }).catch((error) => {
+        console.error('Error loading model:', error);
+    });
+});
+
+decorationPositions.forEach(({ position, name, player }) =>{
+    Load3DModel('../resources/Models/' + name).then((object) => {
+        object.position.set(position.x, position.y, position.z);
+        if(player == 2){
+            object.rotation.y = 1 * Math.PI;
+            object.position.x = position.x * -1;
+            object.position.z = position.z * -1;
+        }
+        scene.add(object);
     }).catch((error) => {
         console.error('Error loading model:', error);
     });
@@ -176,41 +239,54 @@ topPositionsAndKeys.forEach(({ position, key }) =>{
 
 
 /*---Carga de Plano con Textura y rotación---*/
-const texture = new THREE.TextureLoader().load("../resources/TexturaPlaneta.png");
+const texture = new THREE.TextureLoader().load("../resources/texturaEscenario1.jpg");
 
 texture.wrapS = THREE.RepeatWrapping;
 texture.wrapT = THREE.RepeatWrapping;
 texture.repeat.set( 4, 4 );
 const material = new THREE.MeshLambertMaterial({ map: texture});
 
-const planeGeometry = new THREE.PlaneGeometry(10, 10);
+const planeGeometry = new THREE.PlaneGeometry(30, 10);
 const plane = new THREE.Mesh(planeGeometry, material);
 plane.material.side = THREE.DoubleSide;
 scene.add(plane);
 plane.rotation.x = -0.5 * Math.PI;
 
 /*---Posicionamiento de camara---*/
-camera.position.x = 0.01;
-camera.position.y = 4.2;
-camera.position.z = 2.4;
+//Jugador 1
+camera.position.x = 0.02722054735455402;
+camera.position.y = 4.197563889034358;
+camera.position.z = 6.447094644527979;
+
+//Jugador 2
+// camera.position.x = 0.02722054735455402;
+// camera.position.y = 4.197563889034358;
+// camera.position.z = -6.447094644527979;
 
 /*---Funcionamiento de órbita (Si deseas usarlo, comenta la linea donde se deshabilita---*/
 orbit.update();
-orbit.enabled = false;
+orbit.enabled = true;
 
 /*---Luces---*/
-const al = new THREE.AmbientLight(0xffffff, 0.05);
+const al = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(al);
-const pl = new THREE.PointLight(0Xffffff, 10, 10, 2);
-const plHelper = new THREE.PointLightHelper(pl);
-scene.add(pl, plHelper);
+//Player 1 pointing light
+const pl1 = new THREE.PointLight(0Xffffff, 30, 10, 2);
+pl1.position.set(0, 4, 2.5)
+const pl1Helper = new THREE.PointLightHelper(pl1);
+scene.add(pl1, pl1Helper);
+//Player 2 pointing light
+const pl2 = new THREE.PointLight(0Xffffff, 30, 10, 2);
+pl2.position.set(0, 4, -2.5)
+const pl2Helper = new THREE.PointLightHelper(pl2);
+scene.add(pl2, pl2Helper);
 
 /*---Grid---*/
 const gridHelper = new THREE.GridHelper();
 scene.add(gridHelper);
 
 /*---Vector de posiciones generales---*/
-var positions = new THREE.Vector3(0,0,-1);
+// var positions = new THREE.Vector3(0,0,-1);
 
 /*---Fondo escena---*/
 const loader = new THREE.TextureLoader();
@@ -254,7 +330,7 @@ generateText('W').then(textMesh => {
     textMesh.position.set(-3.3, 0, -1.5);
     textMesh.rotation.x = -0.5 * Math.PI;
     W = textMesh;
-    scene.add(W);
+    //scene.add(W);
     }).catch(error => {
         console.error('Error al cargar la fuente:', error);
 });
@@ -263,7 +339,7 @@ generateText('S').then(textMesh => {
     textMesh.position.set(-3.3, 0, 0.5);
     textMesh.rotation.x = -0.5 * Math.PI;
     S = textMesh;
-    scene.add(S);
+    //scene.add(S);
     }).catch(error => {
         console.error('Error al cargar la fuente:', error);
 });
@@ -272,7 +348,7 @@ generateText('A').then(textMesh => {
     textMesh.position.set(-4.1, 0, -0.6);
     textMesh.rotation.x = -0.5 * Math.PI;
     A = textMesh;
-    scene.add(A);
+    //scene.add(A);
     }).catch(error => {
         console.error('Error al cargar la fuente:', error);
 });
@@ -281,7 +357,7 @@ generateText('D').then(textMesh => {
     textMesh.position.set(-2.2, 0, -0.6);
     textMesh.rotation.x = -0.5 * Math.PI;
     D = textMesh;
-    scene.add(D);
+    //scene.add(D);
     }).catch(error => {
         console.error('Error al cargar la fuente:', error);
 });
@@ -290,7 +366,7 @@ generateText('4').then(textMesh => {
     textMesh.position.set(1.5, 0, -0.6);
     textMesh.rotation.x = -0.5 * Math.PI;
     FOUR = textMesh;
-    scene.add(FOUR);
+    //scene.add(FOUR);
     }).catch(error => {
         console.error('Error al cargar la fuente:', error);
 });
@@ -299,7 +375,7 @@ generateText('6').then(textMesh => {
     textMesh.position.set(3.6, 0, -0.6);
     textMesh.rotation.x = -0.5 * Math.PI;
     SIX = textMesh;
-    scene.add(SIX);
+    //scene.add(SIX);
     }).catch(error => {
         console.error('Error al cargar la fuente:', error);
 });
@@ -308,7 +384,7 @@ generateText('8').then(textMesh => {
     textMesh.position.set(2.5, 0, -1.5);
     textMesh.rotation.x = -0.5 * Math.PI;
     EIGHT = textMesh;
-    scene.add(EIGHT);
+    //scene.add(EIGHT);
     }).catch(error => {
         console.error('Error al cargar la fuente:', error);
 });
@@ -317,7 +393,7 @@ generateText('2').then(textMesh => {
     textMesh.position.set(2.7, 0, 0.6);
     textMesh.rotation.x = -0.5 * Math.PI;
     TWO = textMesh;
-    scene.add(TWO);
+    //scene.add(TWO);
     }).catch(error => {
         console.error('Error al cargar la fuente:', error);
 });
@@ -325,17 +401,59 @@ generateText('2').then(textMesh => {
 animate();
 
 function animate(){
+
+    console.log(camera.position);
     
-    pl.position.set(positions.x, positions.y + 3.8, positions.z);
-    box.position.set(positions.x, positions.y, positions.z);
+    // pl.position.set(positions.x, positions.y + 3.8, positions.z);
 
     requestAnimationFrame(animate);
 
     const time = Date.now() * 0.001;
+    // console.log('time: ' + time);
 
     MoleModel.forEach((topo) => {
         if (topo && topo.userData.moving) {
-            topo.position.y = Math.sin(time * topo.userData.speed + topo.userData.offset) * 0.5; 
+            // Si el topo está descansando, verifica si debe volver a moverse
+            if (topo.userData.restingTime > 0) {
+                if (time - topo.userData.lastTime > topo.userData.restingTime) {
+                    topo.userData.restingTime = 0; // Termina el descanso
+                } else {
+                    return; // Continúa descansando
+                }
+            }
+
+            // Movimiento según el tipo
+            switch (topo.userData.movementType) {
+                case 1: // Movimiento suave (sin + cos)
+                    topo.position.y = Math.sin(time * topo.userData.speed) +
+                                      Math.cos(time * topo.userData.speed * 0.5) - 0.2;
+                    break;
+
+                case 2: // Movimiento rápido de entrada/salida
+                    topo.position.y = Math.sin(time * (topo.userData.speed * 2)) +
+                                        Math.cos(time * (topo.userData.speed * 2)) - 0.2;
+                    break;
+
+                case 3: // Movimiento abrupto con pausa arriba
+                    if (time % 2 < 1) {
+                        topo.position.y = 1; // Mantente arriba por 1 segundo
+                    } else {
+                        topo.position.y = -0.6; // Baja abruptamente
+                    }
+                    break;
+
+                default:
+                    topo.position.y = 0; // Movimiento seguro
+                    break;
+            }
+
+            // Si el topo está bajo tierra, inicia el descanso
+            if (topo.position.y <= -0.6) {
+                topo.userData.restingTime = Math.random() * 2; // Descanso aleatorio entre 1 y 3 segundos
+                topo.userData.lastTime = time; // Registrar el tiempo de inicio del descanso
+                topo.userData.movementType = Math.floor(Math.random() * 3) + 1; // Cambiar movimiento
+                //console.log(`Topo descansando. Nuevo movimiento: ${topo.userData.movementType}`);
+            }
         }
     });
 

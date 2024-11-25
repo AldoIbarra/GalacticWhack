@@ -1,7 +1,7 @@
 <?php
     $titlename = "Puntuaciones";
     $stylename = "scores.css";
-    $javascript = "scoress.js";
+    $javascript = "scores.js";
    
     require_once("../header.php");
 ?>
