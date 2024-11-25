@@ -1,9 +1,14 @@
 <?php
+    require("../../config/sessionVerif.php");
     $titlename = "Puntuaciones";
     $stylename = "scores.css";
     $javascript = "scores.js";
    
     require_once("../header.php");
+
+    if(!$_SESSION){
+        header("Location:../mainMenu/mainMenu.php");
+    }
 ?>
 
 
@@ -19,61 +24,7 @@
                     <h3 class="newamsterdam">PUNTUACION</h3>
                 </div>
                 <div id="scores-content">
-                    <table class="newamsterdam">
-                        <tr>
-                            <td>1.</td>
-                            <td>CHORIZOGAMER99</td>
-                            <td>..........</td>
-                            <td>564834</td>
-                        </tr>
-                        <tr>
-                            <td>2.</td>
-                            <td>WEBOESPACIAL23</td>
-                            <td>..........</td>
-                            <td>451215</td>
-                        </tr>
-                        <tr>
-                            <td>2.</td>
-                            <td>WEBOESPACIAL23</td>
-                            <td>..........</td>
-                            <td>451215</td>
-                        </tr>
-                        <tr>
-                            <td>2.</td>
-                            <td>WEBOESPACIAL23</td>
-                            <td>..........</td>
-                            <td>451215</td>
-                        </tr>
-                        <tr>
-                            <td>2.</td>
-                            <td>WEBOESPACIAL23</td>
-                            <td>..........</td>
-                            <td>451215</td>
-                        </tr>
-                        <tr>
-                            <td>2.</td>
-                            <td>WEBOESPACIAL23</td>
-                            <td>..........</td>
-                            <td>451215</td>
-                        </tr>
-                        <tr>
-                            <td>2.</td>
-                            <td>WEBOESPACIAL23</td>
-                            <td>..........</td>
-                            <td>451215</td>
-                        </tr>
-                        <tr>
-                            <td>2.</td>
-                            <td>WEBOESPACIAL23</td>
-                            <td>..........</td>
-                            <td>451215</td>
-                        </tr>
-                        <tr>
-                            <td>2.</td>
-                            <td>WEBOESPACIAL23</td>
-                            <td>..........</td>
-                            <td>451215</td>
-                        </tr>
+                    <table class="newamsterdam" id="scoreTable">
                     </table>
                 </div>
             </div>

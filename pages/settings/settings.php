@@ -1,9 +1,14 @@
 <?php
+    require("../../config/sessionVerif.php");
     $titlename = "Ajustes";
     $stylename = "settings.css";
     $javascript = "settings.js";
    
     require_once("../header.php");
+
+    if(!$_SESSION){
+        header("Location:../mainMenu/mainMenu.php");
+    }
 ?>
 
 

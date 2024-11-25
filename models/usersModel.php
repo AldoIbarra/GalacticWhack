@@ -1,6 +1,8 @@
 <?php
 include_once '../config/bd_conexion.php';
-session_start();
+if(session_status()==PHP_SESSION_NONE){
+    session_start();
+}
 
 class UserClass {
 
@@ -52,6 +54,21 @@ class UserClass {
             $_SESSION['MaxScore'] = $user['MaxScore'];
 
             return [true, $user];
+        } catch (PDOException $e) {
+            return [false, "Error al iniciar sesión: " . $e->getMessage()];
+        }
+    }
+
+    public static function getScores() {
+        self::initializeConnection();
+    
+        try {
+            $sqlSelect = "SELECT * FROM Users ORDER BY MaxScore DESC";
+            $consultaSelect = self::$connection->prepare($sqlSelect);
+            $consultaSelect->execute();
+            $users = $consultaSelect->fetchAll(PDO::FETCH_ASSOC);
+    
+            return [true, $users];
         } catch (PDOException $e) {
             return [false, "Error al iniciar sesión: " . $e->getMessage()];
         }

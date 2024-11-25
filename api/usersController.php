@@ -1,23 +1,49 @@
 <?php
-    include "../models/usersModel.php";
+include "../models/usersModel.php";
+if(session_status()==PHP_SESSION_NONE){
     session_start();
+}
 
-    if($_POST['option'] == 'logIn'){
-        $username = $_POST['userName'];
+try {
+    switch ($_SERVER['REQUEST_METHOD']) {
+        case 'POST':
+            if ($_POST['option'] == 'logIn') {
+                $username = $_POST['userName'];
 
-        $data = json_decode(file_get_contents('php://input'), true);
-        if(empty($username)){
-            http_response_code(400);
-            echo json_encode(array("status" => "error", "message" => "algun dato vacio"));
-        }
-        $response = UserClass::logIn($username);
-        if ($response[0]) {
-            echo "Inicio de sesión exitoso: ";
-            print_r($response[1]); // Datos del usuario
-        } else {
-            echo "Error: " . $response[1];
-        }
+                if (empty($username)) {
+                    http_response_code(400);
+                    echo json_encode(["status" => "error", "message" => "Algún dato vacío"]);
+                    break;
+                }
+
+                $response = UserClass::logIn($username);
+                if ($response[0]) {
+                    echo json_encode(["status" => "success", "data" => $response[1]]);
+                } else {
+                    echo json_encode(["status" => "error", "message" => $response[1]]);
+                }
+            }
+            break;
+
+        case 'GET':
+            if (isset($_GET['scores'])) {
+                $response = UserClass::getScores();
+                if ($response[0]) {
+                    echo json_encode(["status" => "success", "data" => $response[1]]);
+                } else {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'error' => $response[1]]);
+                }
+            }
+            break;
+
+        default:
+            http_response_code(405); // Método no permitido
+            echo json_encode(['success' => false, 'message' => 'Método HTTP no soportado.']);
+            break;
     }
-
-    
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Error en el servidor: ' . $e->getMessage()]);
+}
 ?>

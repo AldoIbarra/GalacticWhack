@@ -1,4 +1,5 @@
 var session;
+var audio = new Audio('../resources/MainMusic.mp3');
 
 $(document).ready(function() {
   $.ajaxSetup({cache: false})
@@ -8,14 +9,25 @@ $(document).ready(function() {
         console.log('Hay sesión');
         $('.noSession').css('display', 'none');
         $('.withSession').css('display', 'block');
+        playMusic();
       }else{
         console.log('No hay sesión');
         $('.noSession').css('display', 'block');
         $('.withSession').css('display', 'none');
+        playMusic();
       }
       console.log(session);
   });
 });
+
+function playMusic(){
+  const savedVolume = localStorage.getItem('musicVolume');
+  if (savedVolume !== null) {
+      audio.volume = savedVolume / 100;
+      audio.loop = true;
+  }
+  audio.play();
+}
 
 
 window.fbAsyncInit = function() {
