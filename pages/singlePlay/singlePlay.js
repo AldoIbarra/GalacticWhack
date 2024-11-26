@@ -2,8 +2,6 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
 var points = 0;
 let instructionsTime = 10;
@@ -11,6 +9,10 @@ let gameTime = 60;
 var animating = true;
 var session;
 var mazoMoving = false;
+var hitaudio = new Audio('../resources/bonk.mp3');
+var powerupaudio = new Audio('../resources/powerup.mp3');
+var punch = new Audio('../resources/punch.mp3');
+var audio = new Audio('../resources/level1.mp3');
 //Solo estilos de página
 $(document).ready(function() {
     /* Info de sesión */
@@ -28,54 +30,58 @@ $(document).ready(function() {
     $(document).keypress(function(e) {
         const tecla = String.fromCharCode(e.which).toLowerCase(); 
 
-        const specificTopo = MoleModel.find(topo => topo.userData.key === tecla);
-
-        console.log(specificTopo);
+        const specificTopo = ChosenModels.find(topo => topo.userData.key === tecla);
 
         if(!mazoMoving){
             mazo1.position.set(specificTopo.position.x, 3, specificTopo.position.z+2);
             mazoMoving = true;
         }
-
-        if (specificTopo) {
-            console.log(`¡Topo golpeado con la tecla ${tecla.toUpperCase()}!`);
-            hitTopo(specificTopo); 
-        }
     })
 });
 
-function updateScore(pointsToAdd) {
-    points += pointsToAdd; // Suma los puntos según el argumento
-    $('#playerScore').text(`Puntuación: ${points}`); // Actualiza el marcador
+function playMusic(){
+  const savedVolume = localStorage.getItem('musicVolume');
+  if (savedVolume !== null) {
+      audio.volume = savedVolume / 100;
+      audio.loop = true;
+  }
+  audio.play();
 }
 
 
 //Golpe al topo
-function hitTopo(specificTopo) {
-    if (specificTopo && specificTopo.position.y > 0) {
-        console.log(`¡${specificTopo.name} golpeado, bajando!`);
-        specificTopo.userData.moving = false; 
-        specificTopo.position.y = -1;
-
-        if (specificTopo.name === "Bellota Buena") {
-            updateScore(3); // 3 puntos para una bellota buena
-        } else if (specificTopo.name === "Bellota Mala") {
-            updateScore(-2); // Restar puntos para una bellota mala
-        } else if (specificTopo.name === "Topo") {
-            updateScore(1); // 1 punto para un topo
-        }
-
+function hitTopo(object) {
+    if (object) {
+        console.log('¡Topo golpeado, bajando!');
+        object.userData.moving = false; 
+        object.position.y = -1;
+        updateScore(object);
+       
         setTimeout(() => {
-            specificTopo.position.y = -2; 
-            specificTopo.userData.offset = Math.random() * Math.PI * 2; 
-            specificTopo.userData.moving = true; 
-            console.log(`¡${specificTopo.name} restaurado desde debajo del suelo!`);
+            object.position.y = -2; 
+            object.userData.offset = Math.random() * Math.PI * 2; 
+            object.userData.moving = true;
         }, 500);
     }
 }
 
-
-
+function updateScore(object){
+    switch(object.name){
+        case 'Mole':
+            hitaudio.play();
+            points++;
+            break
+        case 'BellotaGood':
+            powerupaudio.play();
+            points += 3;
+            break
+        case 'BellotaBad':
+            punch.play();
+            points -= 2;
+            break
+    }
+    $('#playerScore').text(`Puntuación: ${points}`);
+}
 /*---Menu de pausa---*/
 $("#pause").click(function(){
     pause();
@@ -96,8 +102,6 @@ function backToGame(){
     $('#pause-button-container').show();
     $('.game').show();
 }
-
-
 
 /*---Funcionamiento de carga de modelos---*/
 const manager = new THREE.LoadingManager();
@@ -140,7 +144,28 @@ const topPositionsAndKeys = [
     { position: { x: 0, y: -1, z: 4 }, key: 's', player: 1  } // S
 ];
 
-    const decorationPositions = [
+const traps = [
+    { position: { x: 0, y: -1, z: 1 }, key: 'w', player: 1, makes: 'good' }, // W
+    { position: { x: -2, y: -1, z: 2.5 }, key: 'a', player: 1, makes: 'good' }, // A
+    { position: { x: 2, y: -1, z: 2.5 }, key: 'd', player: 1, makes: 'good' }, // D
+    { position: { x: 0, y: -1, z: 4 }, key: 's', player: 1, makes: 'good' }, // S
+    { position: { x: 0, y: -1, z: 1 }, key: 'w', player: 1, makes: 'bad' }, // W
+    { position: { x: -2, y: -1, z: 2.5 }, key: 'a', player: 1, makes: 'bad'  }, // A
+    { position: { x: 2, y: -1, z: 2.5 }, key: 'd', player: 1, makes: 'bad'  }, // D
+    { position: { x: 0, y: -1, z: 4 }, key: 's', player: 1, makes: 'bad'  } // S
+];
+
+const allElements = topPositionsAndKeys.map((item, index) => {
+    return [
+        { type: 'Mole', position: item.position, key: item.key },
+        { type: 'BellotaGood', position: traps[index * 2].position, key: traps[index * 2].key },
+        { type: 'BellotaBad', position: traps[index * 2 + 1].position, key: traps[index * 2 + 1].key }
+    ];
+}).flat();
+
+console.log(allElements);
+
+const decorationPositions = [
     //Craters
     { position: { x: 0, y: 0, z: 1 }, name: 'crater_1', player: 1 },
     { position: { x: -2, y: 0, z: 2.5 }, name: 'crater_1', player: 1 },
@@ -156,7 +181,7 @@ const topPositionsAndKeys = [
     { position: { x: -3.3, y: 0, z: 4.5 }, name: 'cucullus_2', player: 1 },
     { position: { x: -2, y: 0, z: 3.5 }, name: 'cucullus_2', player: 1 },
     { position: { x: 2.5, y: 0, z: 4 }, name: 'cucullus_1', player: 1 },
-    { position: { x: 2.9, y: 0, z: 0 }, name: 'roc  a', player: 1 },
+    { position: { x: 2.9, y: 0, z: 0 }, name: 'roca', player: 1 },
     { position: { x: -11, y: 0, z: 4 }, name: 'roca', player: 1 },
     { position: { x: 6, y: 0, z: 3 }, name: 'roca', player: 1 },
     { position: { x: -6, y: 0, z: 3 }, name: 'roca', player: 1 },
@@ -200,50 +225,95 @@ const orbit = new OrbitControls(camera, renderer.domElement);
 
 /*---Carga de modelo---*/
 let MoleModel = [];
+let BellotaModel = [];
+let AllModel = [];
+var keys = ['w', 'a', 's', 'd'];
+let ChosenModels = [];
 const numMole = 8;
 
-topPositionsAndKeys.forEach(({ position, key, player }) => {
-    const randomChoice = Math.random();
-    let modelPath = '../resources/Models/Mole1'; // Ruta del modelo por defecto (topo)
-    let objectType = 'Topo';
-    if (randomChoice < 0.2) {
-        modelPath = '../resources/Models/bellota_buena';
-        objectType = 'Bellota Buena';
-    } else if (randomChoice < 0.4) {
-        modelPath = '../resources/Models/bellota_mala';
-        objectType = 'Bellota Mala';
-    }
-    Load3DModel(modelPath).then((object) => {
-        object.name = objectType;
-        object.position.set(position.x, -2, position.z);
-        object.userData.speed = Math.random() * 2 + 0.5;
-        object.userData.offset = Math.random() * Math.PI * 2;
-        object.userData.originalPosition = { ...position };
-        object.userData.key = key;
-        object.userData.moving = true;
-        object.userData.movementType = Math.floor(Math.random() * 3) + 1;
-        object.userData.restingTime = 0;
-        object.userData.lastTime = 0;
-        object.userData.player = player;
-        if (player == 2) {
-            object.rotation.y = Math.PI;
+function getRandomModel(key){
+    var models = AllModel.filter(model => model.userData.key == key);
+    return models[Math.floor(Math.random() * models.length)];
+}
+
+function fillChosenModels(key){
+    if(key != null && key != undefined){
+        const existingIndex = ChosenModels.findIndex(model => model.userData.key === key);
+
+        if (existingIndex !== -1) {
+            // Si existe un modelo para la tecla, reemplazarlo por uno aleatorio
+            ChosenModels[existingIndex] = getRandomModel(key);
+        } else {
+            // Si no existe, agregar un nuevo modelo para esa tecla
+            ChosenModels.push(getRandomModel(key));
         }
-        MoleModel.push(object);
+    }else{
+        //Confirmar que el Array tenga un modelo para cada tecla
+        keys.forEach(element => {
+            const modelsForKey = ChosenModels.filter(model => model.userData.key === element);
+
+            if (modelsForKey.length === 0) {
+                // Si no hay modelos para la tecla, agregar uno nuevo
+                ChosenModels.push(getRandomModel(element));
+            } else if (modelsForKey.length > 1) {
+                // Si hay más de un modelo, eliminar hasta que quede solo uno
+                ChosenModels = ChosenModels.filter((model, index, self) => {
+                    // Mantener solo el primer modelo para la tecla
+                    return (
+                        model.userData.key !== element ||
+                        self.findIndex(m => m.userData.key === element) === index
+                    );
+                });
+            }
+        });
+    }
+}
+
+const promises = allElements.map(({ key, position, type }) => {
+    let path = '';
+    switch (type) {
+        case 'Mole':
+            path = '../resources/Models/Mole1';
+            break;
+        case 'BellotaGood':
+            path = '../resources/Models/bellota_buena';
+            break;
+        case 'BellotaBad':
+            path = '../resources/Models/bellota_mala';
+            break;
+        default:
+            path = '';
+            break;
+    }
+
+    return Load3DModel(path).then((object) => {
+        object.name = type;
+        object.position.set(position.x, -2, position.z);
+        object.userData = {
+            speed: Math.random() * 2 + 0.5,
+            offset: Math.random() * Math.PI * 2,
+            originalPosition: { ...position },
+            key,
+            moving: true,
+            movementType: Math.floor(Math.random() * 3) + 1,
+            restingTime: 0,
+            lastTime: 0,
+        };
+        AllModel.push(object);
         scene.add(object);
-        console.log(`${objectType} creado.`);
+        console.log('topo.speed: ' + object.userData.speed);
+        console.log('topo.offset: ' + object.userData.offset);
     }).catch((error) => {
-        console.error('Error al cargar el modelo:', error);
+        console.error('Error loading model:', error);
     });
 });
-const occupiedPositions = new Set();
 
-topPositionsAndKeys.forEach(({ position, key, player }) => {
-    if (!occupiedPositions.has(position)) {
-        occupiedPositions.add(position); // Marca la posición como ocupada
-        // Lógica para crear el objeto (como se mostró antes)
-    }
+// Esperar a que todas las promesas se resuelvan
+Promise.all(promises).then(() => {
+    fillChosenModels();
+}).catch((error) => {
+    console.error('Error al cargar algunos modelos:', error);
 });
-
 
 decorationPositions.forEach(({ position, name, player }) =>{
     Load3DModel('../resources/Models/' + name).then((object) => {
@@ -254,7 +324,7 @@ decorationPositions.forEach(({ position, name, player }) =>{
             object.position.z = position.z * -1;
         }
         scene.add(object);
-        console.log(object);
+        // console.log(object);
     }).catch((error) => {
         console.error('Error loading model:', error);
     });
@@ -303,7 +373,7 @@ camera.position.z = 6.447094644527979;
 
 /*---Funcionamiento de órbita (Si deseas usarlo, comenta la linea donde se deshabilita---*/
 orbit.update();
-orbit.enabled = false;
+orbit.enabled = true;
 
 /*---Luces---*/
 const al = new THREE.AmbientLight(0xffffff, 0.5);
@@ -334,6 +404,8 @@ function startInstructionsTimer() {
             $('#timeInstructions').text(instructionsTime);
         } else {
             // Detiene el timer cuando llega a 0
+            playMusic();
+            $('#game-display').removeClass('instructionsImg');
             $('#timeInstructions').css('display', 'none');
             $('#time').css('display', 'block');
             clearInterval(timerInterval); 
@@ -355,25 +427,50 @@ function startGameTimer() {
              // Detiene el timer cuando llega a 0
             clearInterval(timerGameInterval);
             console.log('¡Tiempo terminado!');
+            $('#endGame').css('display', 'block');
             animating = false;
-            //setScores(points);
+            $('#finalPoints').text('Puntuación final: ' + points);
+            $('#noRecordBreak').css('display', 'none');
+            $('#recordBreak').css('display', 'none');
+            if(points > session.MaxScore){
+                $('#recordBreak').css('display', 'block');
+            }else{
+                $('#noRecordBreak').css('display', 'block');
+            }
+            if(points > 0){
+                setScores(points);
+            }else{
+                alert('¡Hiciste 0 puntos!');
+                window.location.href = '../mainMenu/mainMenu.php';
+            }
         }
     }, 1000);
 }
 
 
 function animate(){
+    var MazoPos = { x: mazo1.position.x, y: mazo1.position.y-1, z: mazo1.position.z - 2};
+    var col = ChosenModels.find(model => model.position.x == MazoPos.x && model.position.z == MazoPos.z && model.position.y > MazoPos.y);
+    if(col){
+        // console.log('-aaaaaaaaaaaaaaaaaa--------------------------------');
+        // console.log('hay colision');
+        // console.log(col);
+        hitTopo(col);
+    }
 
     //console.log(camera.position);
-
-    
 
     if(animating)
         requestAnimationFrame(animate);
 
     const time = Date.now() * 0.001;
 
-    MoleModel.forEach((topo) => {
+    ChosenModels.forEach((topo) => {
+        if(topo.userData.key == 's'){
+            // console.log('-----------------------s----------------------');
+            // console.log(topo.position.x, topo.position.y, topo.position.z);
+            // console.log(MazoPos.x, MazoPos.y, MazoPos.z);
+        }
         if(mazoMoving){
             mazo1.position.y -= 0.01;
             if(mazo1.position.y <= 1.8){
@@ -420,6 +517,7 @@ function animate(){
                 topo.userData.restingTime = Math.random() * 2; // Descanso aleatorio entre 1 y 3 segundos
                 topo.userData.lastTime = time; // Registrar el tiempo de inicio del descanso
                 topo.userData.movementType = Math.floor(Math.random() * 3) + 1; // Cambiar movimiento
+                fillChosenModels(topo.userData.key);
                 //console.log(`Topo descansando. Nuevo movimiento: ${topo.userData.movementType}`);
             }
         }
@@ -438,7 +536,8 @@ function setScores(points) {
             option: 'setScore'
         },
         success: function(data) {
-          console.log(data);
+          alert('¡Tu puntuación fue actualizada!');
+          window.location.href = '../mainMenu/mainMenu.php';
         },
         error: function(xhr, status, error) {
           console.log(error);

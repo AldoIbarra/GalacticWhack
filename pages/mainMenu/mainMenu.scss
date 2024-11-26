@@ -34,3 +34,35 @@
         }
     }
 }
+
+#seleccion-escenarios{
+    text-align: center;
+    height: 100vh;
+    padding: 10vh 0vw;
+    background-image: url(../resources/5532919.jpg);
+    background-size: cover;
+    h2{
+        color: #fe9c00;
+        font-size: 3vw;
+    }
+    form{
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-evenly;
+        select{
+            font-size: 2vw;
+        }
+        input{
+            font-size: 2vw;
+            padding: 2px 50px;
+            outline: none;
+            border-radius: 10px;
+            background-color: #00ccff;
+            color: white;
+            &:hover{
+                background-color: purple;
+            }
+        }
+    }
+}

@@ -24,7 +24,6 @@
                     <input type="range" min="1" max="100" value="50" name="volume" id="slider">
                 </div>
                 <div id="otherOptions">
-                    <h3 class="newamsterdam">OTRAS OPCIONES CON EL MISMO ESTILO</h3>
                 </div>
             </div>
             <div class="col-12 back">

@@ -35,4 +35,36 @@
   outline: none;
 }
 
-/*# sourceMappingURL=mainmenu.css.map */
+#seleccion-escenarios {
+  text-align: center;
+  height: 100vh;
+  padding: 10vh 0vw;
+  background-image: url(../resources/5532919.jpg);
+  background-size: cover;
+}
+#seleccion-escenarios h2 {
+  color: #fe9c00;
+  font-size: 3vw;
+}
+#seleccion-escenarios form {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
+}
+#seleccion-escenarios form select {
+  font-size: 2vw;
+}
+#seleccion-escenarios form input {
+  font-size: 2vw;
+  padding: 2px 50px;
+  outline: none;
+  border-radius: 10px;
+  background-color: #00ccff;
+  color: white;
+}
+#seleccion-escenarios form input:hover {
+  background-color: purple;
+}
+
+/*# sourceMappingURL=mainMenu.css.map */

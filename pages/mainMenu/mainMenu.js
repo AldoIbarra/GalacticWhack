@@ -52,8 +52,8 @@ window.fbAsyncInit = function() {
 
 function onLogin(){
     if($('#user').val() != null && $('#user').val() != ''){
-      login();
-      //fbLogIn();
+      //login();
+      fbLogIn();
     }else{
       alert("Ingresa tu usuario");
     }

@@ -2,10 +2,15 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
 var session;
+var points = 0;
+let instructionsTime = 10;
+let gameTime = 60;
+var animating = true;
+var mazoMoving = false;
+var nombreJugador2="";
+var nombreJugador1="";
 
 //Solo estilos de página
 $(document).ready(function() {
@@ -15,35 +20,23 @@ $(document).ready(function() {
         session = JSON.parse(data);
         console.log(session);
         console.log(session.UserName);
+        iniciarConexion();
     });
 
     /*---Ocultar menu al inicio---*/
     $('.pause-container').hide();
 
- //Validacion de teclas
+    //Validacion de teclas
     $(document).keypress(function(e) {
         const tecla = String.fromCharCode(e.which).toLowerCase(); 
-
-        const specificTopo = MoleModel.find(topo => topo.userData.key === tecla);
-
-        if (specificTopo) {
-            console.log(`¡Topo golpeado con la tecla ${tecla.toUpperCase()}!`);
-            hitTopo(specificTopo); 
+   
+        const specificTopo = ChosenModels.find(topo => topo.userData.key === tecla);
+   
+        if(!mazoMoving){
+            mazo1.position.set(specificTopo.position.x, 3, specificTopo.position.z+2);
+            mazoMoving = true;
         }
     })
-
-    let isKeyPressed = false;
-    $(document).keydown(function(event){
-        if(!isKeyPressed){
-            pressDown(event.key);
-            isKeyPressed = true;
-        }
-        console.log(event.key);
-    });
-    $(document).keyup(function(event) {
-        isKeyPressed = false;
-        pressUp(event.key);
-    });
 });
 
 
@@ -61,20 +54,34 @@ socket.on('updatePoints', (players) => {
 
 
 //Golpe al topo
-function hitTopo(specificTopo) {
-    if (specificTopo && specificTopo.position.y > 0) {
+function hitTopo(object) {
+    if (object) {
         console.log('¡Topo golpeado, bajando!');
-        specificTopo.userData.moving = false; 
-        specificTopo.position.y = -1;
-
+        object.userData.moving = false; 
+        object.position.y = -1;
+        updateScore(object);
        
         setTimeout(() => {
-            specificTopo.position.y = -2; 
-            specificTopo.userData.offset = Math.random() * Math.PI * 2; 
-            specificTopo.userData.moving = true; 
-            console.log('¡Topo restaurado desde debajo del suelo!');
+            object.position.y = -2; 
+            object.userData.offset = Math.random() * Math.PI * 2; 
+            object.userData.moving = true;
         }, 500);
     }
+}
+
+function updateScore(object){
+    switch(object.name){
+        case 'Mole':
+            points++;
+            break
+        case 'BellotaGood':
+            points += 3;
+            break
+        case 'BellotaBad':
+            points -= 2;
+            break
+    }
+    $('#playerScore').text(`Puntuación: ${points}`);
 }
 /*---Menu de pausa---*/
 $("#pause").click(function(){
@@ -135,12 +142,41 @@ const topPositionsAndKeys = [
     { position: { x: 0, y: -1, z: 1 }, key: 'w', player: 1  }, // W
     { position: { x: -2, y: -1, z: 2.5 }, key: 'a', player: 1  }, // A
     { position: { x: 2, y: -1, z: 2.5 }, key: 'd', player: 1  }, // D
-    { position: { x: 0, y: -1, z: 4 }, key: 's', player: 1  }, // S
-    { position: { x: 0, y: -1, z: -1 }, key: '8', player: 2 }, // 8
-    { position: { x: 2, y: -1, z: -2.5 }, key: '6', player: 2 }, // 6
-    { position: { x: -2, y: -1, z: -2.5 }, key: '4', player: 2 }, // 4
-    { position: { x: 0, y: -1, z: -4 }, key: '2', player: 2 }    // 2
+    { position: { x: 0, y: -1, z: 4 }, key: 's', player: 1  } , // S
+    { position: { x: 0, y: -1, z: 1 }, key: 'w', player: 2  }, // W
+    { position: { x: -2, y: -1, z: 2.5 }, key: 'a', player: 2  }, // A
+    { position: { x: 2, y: -1, z: 2.5 }, key: 'd', player: 2  }, // D
+    { position: { x: 0, y: -1, z: 4 }, key: 's', player: 2  } , // S
 ];
+
+const traps = [
+    { position: { x: 0, y: -1, z: 1 }, key: 'w', player: 1, makes: 'good' }, // W
+    { position: { x: -2, y: -1, z: 2.5 }, key: 'a', player: 1, makes: 'good' }, // A
+    { position: { x: 2, y: -1, z: 2.5 }, key: 'd', player: 1, makes: 'good' }, // D
+    { position: { x: 0, y: -1, z: 4 }, key: 's', player: 1, makes: 'good' }, // S
+    { position: { x: 0, y: -1, z: 1 }, key: 'w', player: 1, makes: 'bad' }, // W
+    { position: { x: -2, y: -1, z: 2.5 }, key: 'a', player: 1, makes: 'bad'  }, // A
+    { position: { x: 2, y: -1, z: 2.5 }, key: 'd', player: 1, makes: 'bad'  }, // D
+    { position: { x: 0, y: -1, z: 4 }, key: 's', player: 1, makes: 'bad'  }, // S
+
+    
+    { position: { x: 0, y: -1, z: 1 }, key: 'w', player: 2, makes: 'good' }, // W
+    { position: { x: -2, y: -1, z: 2.5 }, key: 'a', player: 2, makes: 'good' }, // A
+    { position: { x: 2, y: -1, z: 2.5 }, key: 'd', player: 2, makes: 'good' }, // D
+    { position: { x: 0, y: -1, z: 4 }, key: 's', player: 2, makes: 'good' }, // S
+    { position: { x: 0, y: -1, z: 1 }, key: 'w', player: 2, makes: 'bad' }, // W
+    { position: { x: -2, y: -1, z: 2.5 }, key: 'a', player: 2, makes: 'bad'  }, // A
+    { position: { x: 2, y: -1, z: 2.5 }, key: 'd', player: 2, makes: 'bad'  }, // D
+    { position: { x: 0, y: -1, z: 4 }, key: 's', player: 2, makes: 'bad'  } // S
+];
+
+const allElements = topPositionsAndKeys.map((item, index) => {
+    return [
+        { type: 'Mole', position: item.position, key: item.key, player: item.player },
+        { type: 'BellotaGood', position: traps[index * 2].position, key: traps[index * 2].key, player: item.player },
+        { type: 'BellotaBad', position: traps[index * 2 + 1].position, key: traps[index * 2 + 1].key, player: item.player }
+    ];
+}).flat();
 
 const decorationPositions = [
     //Craters
@@ -205,31 +241,99 @@ const orbit = new OrbitControls(camera, renderer.domElement);
 
 /*---Carga de modelo---*/
 let MoleModel = [];
+let BellotaModel = [];
+let AllModel = [];
+var keys = ['w', 'a', 's', 'd'];
+let ChosenModels = [];
 const numMole = 8;
 
-topPositionsAndKeys.forEach(({ position, key, player }) =>{
-    Load3DModel('../resources/Models/Mole1').then((object) => {
-        object.name = "Test";
+function getRandomModel(key){
+    var models = AllModel.filter(model => model.userData.key == key);
+    return models[Math.floor(Math.random() * models.length)];
+}
+
+function fillChosenModels(key){
+    if(key != null && key != undefined){
+        const existingIndex = ChosenModels.findIndex(model => model.userData.key === key);
+
+        if (existingIndex !== -1) {
+            // Si existe un modelo para la tecla, reemplazarlo por uno aleatorio
+            ChosenModels[existingIndex] = getRandomModel(key);
+        } else {
+            // Si no existe, agregar un nuevo modelo para esa tecla
+            ChosenModels.push(getRandomModel(key));
+        }
+    }else{
+        //Confirmar que el Array tenga un modelo para cada tecla
+        keys.forEach(element => {
+            const modelsForKey = ChosenModels.filter(model => model.userData.key === element);
+
+            if (modelsForKey.length === 0) {
+                // Si no hay modelos para la tecla, agregar uno nuevo
+                ChosenModels.push(getRandomModel(element));
+            } else if (modelsForKey.length > 1) {
+                // Si hay más de un modelo, eliminar hasta que quede solo uno
+                ChosenModels = ChosenModels.filter((model, index, self) => {
+                    // Mantener solo el primer modelo para la tecla
+                    return (
+                        model.userData.key !== element ||
+                        self.findIndex(m => m.userData.key === element) === index
+                    );
+                });
+            }
+        });
+    }
+}
+
+const promises = allElements.map(({ key, position, type, player }) => {
+    let path = '';
+    switch (type) {
+        case 'Mole':
+            path = '../resources/Models/Mole1';
+            break;
+        case 'BellotaGood':
+            path = '../resources/Models/bellota_buena';
+            break;
+        case 'BellotaBad':
+            path = '../resources/Models/bellota_mala';
+            break;
+        default:
+            path = '';
+            break;
+    }
+
+    return Load3DModel(path).then((object) => {
+        object.name = type;
         object.position.set(position.x, -2, position.z);
-        object.userData.speed = Math.random() * 2 + 0.5;
-        object.userData.offset = Math.random() * Math.PI * 2; 
-        object.userData.originalPosition = { ...position };
-        object.userData.key = key;
-        object.userData.moving = true;
-        object.userData.movementType = Math.floor(Math.random() * 3) + 1;
-        object.userData.restingTime = 0;
-        object.userData.lastTime = 0;
-        object.userData.player = player;
         if(player == 2){
             object.rotation.y = 1 * Math.PI;
+            object.position.x = position.x * -1;
+            object.position.z = position.z * -1;
         }
-        MoleModel.push(object);
+        object.userData = {
+            speed: Math.random() * 2 + 0.5,
+            offset: Math.random() * Math.PI * 2,
+            originalPosition: { ...position },
+            key,
+            moving: true,
+            movementType: Math.floor(Math.random() * 3) + 1,
+            restingTime: 0,
+            lastTime: 0,
+        };
+        AllModel.push(object);
         scene.add(object);
         console.log('topo.speed: ' + object.userData.speed);
         console.log('topo.offset: ' + object.userData.offset);
     }).catch((error) => {
         console.error('Error loading model:', error);
     });
+});
+
+// Esperar a que todas las promesas se resuelvan
+Promise.all(promises).then(() => {
+    fillChosenModels();
+}).catch((error) => {
+    console.error('Error al cargar algunos modelos:', error);
 });
 
 decorationPositions.forEach(({ position, name, player }) =>{
@@ -266,8 +370,10 @@ async function setModel({ position, name, player }) {
     }
 }
 
-const mazo1 = await setModel({ position: { x: 0, y: 3, z: 0 }, name: 'MAZO', player: 1 });
-const mazo2 = await setModel({ position: { x: 0, y: 3, z: 0 }, name: 'MAZO', player: 1 });
+const mazo1 = await setModel({ position: { x: 0, y: -8, z: 0 }, name: 'MAZO', player: 1 });
+const mazo2 = await setModel({ position: { x: 0, y: -8, z: 0 }, name: 'MAZO', player: 1 });
+mazo1.rotation.x = -0.5 * Math.PI;
+mazo2.rotation.x = 0.5 * Math.PI;
 
 /*---Carga de Plano con Textura y rotación---*/
 const texture = new THREE.TextureLoader().load("../resources/texturaEscenario1.jpg");
@@ -304,13 +410,7 @@ scene.add(al);
 //Player 1 pointing light
 const pl1 = new THREE.PointLight(0Xffffff, 30, 10, 2);
 pl1.position.set(0, 4, 2.5)
-const pl1Helper = new THREE.PointLightHelper(pl1);
-scene.add(pl1, pl1Helper);
-//Player 2 pointing light
-const pl2 = new THREE.PointLight(0Xffffff, 30, 10, 2);
-pl2.position.set(0, 4, -2.5)
-const pl2Helper = new THREE.PointLightHelper(pl2);
-scene.add(pl2, pl2Helper);
+scene.add(pl1);
 
 /*---Grid---*/
 const gridHelper = new THREE.GridHelper();
@@ -324,128 +424,88 @@ const loader = new THREE.TextureLoader();
 const textureBackground = loader.load('../resources/space3.png');
 scene.background = textureBackground;
 
-/* Fuente */
-const fontLoader = new FontLoader();
+/* Comienzo de timers */
 
-function generateText(text) {
-    return new Promise((resolve, reject) => {
-      fontLoader.load('../resources/gentilis_bold.typeface.json', function(font) {
-        const textGeometry = new TextGeometry(text, {
-          font: font,
-          size: 0.8,          // Tamaño del texto
-          height: 0.1,      // Profundidad del texto (grosor)
-          curveSegments: 12, // Segmentos de curva para suavidad
-          bevelEnabled: true,   // Habilitar bisel para efecto 3D
-          bevelThickness: 0.03, // Grosor del bisel
-          bevelSize: 0.02,      // Tamaño del bisel
-          bevelOffset: 0,       // Desplazamiento del bisel
-          bevelSegments: 5      // Segmentos del bisel
-        });
-        const textMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
-        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-        resolve(textMesh);
-      }, undefined, function(error) {
-        reject(error);
-      });
-    });
-  }
-var W = new THREE.Mesh();
-var A = new THREE.Mesh();
-var S = new THREE.Mesh();
-var D = new THREE.Mesh();
-var EIGHT = new THREE.Mesh();
-var TWO = new THREE.Mesh();
-var SIX = new THREE.Mesh();
-var FOUR = new THREE.Mesh();
-generateText('W').then(textMesh => {
-    textMesh.position.set(-3.3, 0, -1.5);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    W = textMesh;
-    //scene.add(W);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
+function startInstructionsTimer() {
+    const timerInterval = setInterval(() => {
+        if (instructionsTime > 0) {
+            instructionsTime--;
+            $('#timeInstructions').text(instructionsTime);
+        } else {
+            // Detiene el timer cuando llega a 0
+            $('#game-display').removeClass('instructionsImg');
+            $('#timeInstructions').css('display', 'none');
+            $('#time').css('display', 'block');
+            clearInterval(timerInterval); 
+            console.log('¡Tiempo terminado!');
+            animate();
+            startGameTimer();
+        }
+    }, 1000);
+}
 
-generateText('S').then(textMesh => {
-    textMesh.position.set(-3.3, 0, 0.5);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    S = textMesh;
-    //scene.add(S);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
+startInstructionsTimer();
 
-generateText('A').then(textMesh => {
-    textMesh.position.set(-4.1, 0, -0.6);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    A = textMesh;
-    //scene.add(A);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
-
-generateText('D').then(textMesh => {
-    textMesh.position.set(-2.2, 0, -0.6);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    D = textMesh;
-    //scene.add(D);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
-
-generateText('4').then(textMesh => {
-    textMesh.position.set(1.5, 0, -0.6);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    FOUR = textMesh;
-    //scene.add(FOUR);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
-
-generateText('6').then(textMesh => {
-    textMesh.position.set(3.6, 0, -0.6);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    SIX = textMesh;
-    //scene.add(SIX);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
-
-generateText('8').then(textMesh => {
-    textMesh.position.set(2.5, 0, -1.5);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    EIGHT = textMesh;
-    //scene.add(EIGHT);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
-
-generateText('2').then(textMesh => {
-    textMesh.position.set(2.7, 0, 0.6);
-    textMesh.rotation.x = -0.5 * Math.PI;
-    TWO = textMesh;
-    //scene.add(TWO);
-    }).catch(error => {
-        console.error('Error al cargar la fuente:', error);
-});
+function startGameTimer() {
+    const timerGameInterval = setInterval(() => {
+        if (gameTime > 0) {
+            gameTime--;
+            $('#time').text(gameTime);
+        } else {
+             // Detiene el timer cuando llega a 0
+            clearInterval(timerGameInterval);
+            console.log('¡Tiempo terminado!');
+            $('#endGame').css('display', 'block');
+            animating = false;
+            $('#finalPoints').text('Puntuación final: ' + points);
+            $('#noRecordBreak').css('display', 'none');
+            $('#recordBreak').css('display', 'none');
+            if(points > session.MaxScore){
+                $('#recordBreak').css('display', 'block');
+            }else{
+                $('#noRecordBreak').css('display', 'block');
+            }
+            if(points > 0){
+                //setScores(points);
+            }else{
+                alert('¡Hiciste 0 puntos!');
+                window.location.href = '../mainMenu/mainMenu.php';
+            }
+        }
+    }, 1000);
+}
 
 animate();
 
 function animate(){
+    var MazoPos = { x: mazo1.position.x, y: mazo1.position.y-1, z: mazo1.position.z - 2};
+    var col = ChosenModels.find(model => model.position.x == MazoPos.x && model.position.z == MazoPos.z && model.position.y > MazoPos.y);
+    if(col){
+        // console.log('-aaaaaaaaaaaaaaaaaa--------------------------------');
+        // console.log('hay colision');
+        // console.log(col);
+        hitTopo(col);
+    }
 
-    console.log(camera.position);
+    //console.log(camera.position);
 
-    mazo1.position.set(0, -8, 0);
-    mazo2.position.set(0, -8, 0);
-    
-    // pl.position.set(positions.x, positions.y + 3.8, positions.z);
-
-    requestAnimationFrame(animate);
+    if(animating)
+        requestAnimationFrame(animate);
 
     const time = Date.now() * 0.001;
-    // console.log('time: ' + time);
 
-    MoleModel.forEach((topo) => {
+    ChosenModels.forEach((topo) => {
+        if(topo.userData.key == 's'){
+            // console.log('-----------------------s----------------------');
+            // console.log(topo.position.x, topo.position.y, topo.position.z);
+            // console.log(MazoPos.x, MazoPos.y, MazoPos.z);
+        }
+        if(mazoMoving){
+            mazo1.position.y -= 0.01;
+            if(mazo1.position.y <= 1.8){
+                mazoMoving = false;
+            }
+        }
         if (topo && topo.userData.moving) {
             // Si el topo está descansando, verifica si debe volver a moverse
             if (topo.userData.restingTime > 0) {
@@ -486,6 +546,7 @@ function animate(){
                 topo.userData.restingTime = Math.random() * 2; // Descanso aleatorio entre 1 y 3 segundos
                 topo.userData.lastTime = time; // Registrar el tiempo de inicio del descanso
                 topo.userData.movementType = Math.floor(Math.random() * 3) + 1; // Cambiar movimiento
+                fillChosenModels(topo.userData.key);
                 //console.log(`Topo descansando. Nuevo movimiento: ${topo.userData.movementType}`);
             }
         }
@@ -494,64 +555,30 @@ function animate(){
     renderer.render( scene, camera );
 }
 
-function pressDown(tecla){
-    switch (tecla) {
-        case 'w' || 'W':
-            W.position.set(-3.3, -0.1, -1.5);
-            break;
-        case 'a' || 'A':
-            A.position.set(-4.1, -0.1, -0.6);
-            break;
-        case 's'  || 'S':
-            S.position.set(-3.3, -0.1, 0.5);
-            break;
-        case 'd' || 'D':
-            D.position.set(-2.2, -0.1, -0.6);
-            break;
-        case '8':
-            EIGHT.position.set(2.5, -0.1, -1.5);
-            break;
-        case '4':
-            FOUR.position.set(1.5, -0.1, -0.6);
-            break;
-        case '6':
-            SIX.position.set(3.6, -0.1, -0.6);
-            break;
-        case '2':
-            TWO.position.set(2.7, -0.1, 0.6);
-            break;
-        default:
-          break;
-    }
+function setScores(points) {
+    $.ajax({
+        type: "POST",
+        url: "../../api/usersController.php",
+        data: {
+            points: points,
+            userName: session.UserName,
+            option: 'setScore'
+        },
+        success: function(data) {
+          alert('¡Tu puntuación fue actualizada!');
+          window.location.href = '../mainMenu/mainMenu.php';
+        },
+        error: function(xhr, status, error) {
+          console.log(error);
+            alert('Error.');
+            console.log('error');
+        },
+    });
 }
 
-function pressUp(tecla){
-    switch (tecla) {
-        case 'w' || 'W':
-            W.position.set(-3.3, 0, -1.5);
-            break;
-        case 'a' || 'A':
-            A.position.set(-4.1, 0, -0.6);
-            break;
-        case 's'  || 'S':
-            S.position.set(-3.3, 0, 0.5);
-            break;
-        case 'd' || 'D':
-            D.position.set(-2.2, 0, -0.6);
-            break;
-        case '8':
-            EIGHT.position.set(2.5, 0, -1.5);
-            break;
-        case '4':
-            FOUR.position.set(1.5, 0, -0.6);
-            break;
-        case '6':
-            SIX.position.set(3.6, 0, -0.6);
-            break;
-        case '2':
-            TWO.position.set(2.7, 0, 0.6);
-            break;
-        default:
-          break;
-    }
-}
+function iniciarConexion(){
+
+  nombreJugador1=session.UserName;
+  socket.emit('Iniciar',nombreJugador1);
+
+};

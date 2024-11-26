@@ -20,6 +20,10 @@
   font-size: 4vw;
   color: #ff6490;
 }
+#main .instructionsImg {
+  background-image: url(../resources/instrucciones.png);
+  background-size: cover;
+}
 #main .game {
   height: 85vh;
   border: 20px solid #00ccff;
@@ -28,39 +32,53 @@
 }
 #main .game #score {
   position: absolute;
-  top: 120px;
-  left: 230px;
+  top: 7vw;
+  left: 12vw;
   font-size: 20px;
   color: white;
   font-family: Arial, sans-serif;
   z-index: 1000;
 }
 #main .game #score h1 {
-  font-size: 40px;
+  font-size: 2vw;
   color: #fe9c00;
 }
 #main .game #score h4 {
   background-color: black;
-  font-size: 30px;
+  font-size: 1.5vw;
   border: solid #fe9c00 3px;
 }
 #main .game #timeContainer {
   position: absolute;
-  top: 120px;
-  left: 830px;
-  font-size: 20px;
+  top: 7vw;
+  left: 44vw;
+  font-size: 4vw;
   color: white;
   font-family: Arial, sans-serif;
   z-index: 1000;
 }
 #main .game #timeContainer #timeInstructions {
   color: red;
-  font-size: 80px;
+  font-size: 4vw;
 }
 #main .game #timeContainer #time {
   display: none;
-  font-size: 80px;
+  font-size: 4vw;
   color: #6728af;
+}
+#main .game #endGame {
+  display: none;
+  position: absolute;
+  top: 18vw;
+  left: 25vw;
+  text-align: center;
+  color: white;
+}
+#main .game #endGame h1 {
+  font-size: 70px;
+}
+#main .game #endGame .gameOver {
+  color: #df9903;
 }
 #main .pause-container .pause-body {
   display: flex;

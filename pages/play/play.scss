@@ -20,11 +20,65 @@
             }
         }
     }
+    .instructionsImg{
+        background-image: url(../resources/instrucciones_multi.png);
+        background-size: cover;
+    }
     .game{
         height: 85vh;
         border: 20px solid #00ccff;
         margin-left: -2px;
         border-radius: 20px;
+        #score{
+            position: absolute;
+            top: 7vw;
+            left: 12vw;
+            font-size: 20px;
+            color: white;
+            font-family: Arial, sans-serif;
+            z-index: 1000;
+            h1{
+                font-size: 2vw;
+                color: #fe9c00;
+            }
+            h4{
+                background-color: black;
+                font-size: 1.5vw;
+                border: solid #fe9c00 3px;
+            }
+        }
+        #timeContainer{
+            position: absolute;
+            top: 7vw;
+            left: 44vw;
+            font-size: 4vw;
+            color: white;
+            font-family: Arial, sans-serif;
+            z-index: 1000;
+            #timeInstructions{
+                color: red;
+                font-size: 4vw;
+            }
+            #time{
+                display: none;
+                font-size: 4vw;
+                color: rgb(103, 40, 175);
+            }
+        }
+        #endGame{
+            display: none;
+            position: absolute;
+            top: 18vw;
+            left: 25vw;
+            text-align: center;
+            color: white;
+            h1{
+                font-size: 70px;
+            }
+            .gameOver{
+                color: #df9903;
+            }
+        }
     }
     .pause-container{
         .pause-body{
